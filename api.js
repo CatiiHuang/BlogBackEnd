@@ -207,25 +207,20 @@ router.post("/api/admin/checkUser", (req, res) => {
 router.post("/api/articleLists", async (req, res) => {
   const pageSize = req.body.pageSize;
   const total = (await db.Article.find()).length;
-  db.Article.find({}, (err, data) => {
-    if (err) {
-      res.send(err);
-      return;
-    }
-    for (let i = 0; i < data.length; i++) {
-      data[i]["comments"] = data[i]["comments"].length;
-      data[i]["content"] = null;
-    }
-    const t = new Date().getTime() + 1000;
-    res.send({
-      data,
-      pageSize,
-      total,
-      page: req.body.page,
-    });
-  })
-    .skip(req.body.page * 5)
+  const data = await db.Article.find()
+    .sort({ date: -1 })
+    .skip(pageSize * req.body.page)
     .limit(pageSize);
+  for (let i = 0; i < data.length; i++) {
+    data[i]["comments"] = data[i]["comments"].length;
+    data[i]["content"] = null;
+  }
+  res.send({
+    data,
+    pageSize,
+    total,
+    page: req.body.page,
+  });
 });
 //获取所有文章列表
 router.post("/api/articleList", (req, res) => {

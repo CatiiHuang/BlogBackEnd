@@ -137,7 +137,7 @@ router.post("/api/admin/updateUser", (req, res) => {
           __dirname,
           "./assets/upload/avatar/" + D + ".png",
         ); //api.js的上级的static下
-        let pathImg = "/upload/avatar/" + D + ".png"; //返前台路径目录
+        let pathImg = "/assets/upload/avatar/" + D + ".png"; //返前台路径目录
         let base64 = req.body.avatar.replace(/^data:image\/\w+;base64,/, "");
         let dataBuffer = new Buffer(base64, "base64"); //把base64码转成buffer对象，
         fs.writeFile(saveImg, dataBuffer, function (err) {
@@ -546,7 +546,7 @@ router.post("/api/uploadImg", (req, res) => {
       console.log(err);
       res.send(err);
     } else {
-      res.send({ code: "200", data: "/upload/article/" + D + ".png" });
+      res.send({ code: "200", data: "/assets/upload/article/" + D + ".png" });
     }
   });
 });

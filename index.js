@@ -24,8 +24,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(api);
 // //配置静态资源库 在8000端口下
-app.use(express.static(path.join(__dirname, "./web"))); //配置静态资源库
-app.use(express.static(path.join(__dirname, "./assets"))); //配置静态资源库
+// app.use(express.static(path.join(__dirname, "./web"))); //配置静态资源库
+app.use("/assets", express.static(path.join(__dirname, "./assets"))); //配置静态资源库
 // 监听8000端口
 app.listen(8088);
 console.log("success listen…………");

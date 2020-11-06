@@ -48,41 +48,38 @@ router.post("/api/admin/signUp", (req, res) => {
 });
 //登录
 router.post("/api/admin/signIn", (req, res) => {
-  db.User.find(
-    { name: req.body.name, password: req.body.password },
-    (err, docs) => {
-      if (err) {
-        res.send(err);
-        return;
-      }
-      if (docs.length > 0) {
-        let content = { name: req.body.name }; // 要生成token的主题信息
-        let secretOrPrivateKey = "123456"; // 这是加密的key（密钥）
-        let token = jwt.sign(content, secretOrPrivateKey, {
-          expiresIn: 60 * 60 * 24, // 24小时过期
-        });
+  db.User.find({ name: req.body.name, password: req.body.password }, (err, docs) => {
+    if (err) {
+      res.send(err);
+      return;
+    }
+    if (docs.length > 0) {
+      let content = { name: req.body.name }; // 要生成token的主题信息
+      let secretOrPrivateKey = "123456"; // 这是加密的key（密钥）
+      let token = jwt.sign(content, secretOrPrivateKey, {
+        expiresIn: 60 * 60 * 24, // 24小时过期
+      });
 
-        docs[0].token = token;
-        db.User(docs[0]).save(function (err) {
-          if (err) {
-            res.status(500).send();
-            return;
-          }
-          res.send({
-            status: 1,
-            msg: "登陆成功",
-            token: docs[0].token,
-            user_name: docs[0]["name"],
-            type: docs[0]["type"],
-            nickName: docs[0]["nickName"],
-            avatar: docs[0]["avatar"],
-          });
+      docs[0].token = token;
+      db.User(docs[0]).save(function (err) {
+        if (err) {
+          res.status(500).send();
+          return;
+        }
+        res.send({
+          status: 1,
+          msg: "登陆成功",
+          token: docs[0].token,
+          user_name: docs[0]["name"],
+          type: docs[0]["type"],
+          nickName: docs[0]["nickName"],
+          avatar: docs[0]["avatar"],
         });
-      } else {
-        res.send({ status: 0, msg: "登录失败" });
-      }
-    },
-  );
+      });
+    } else {
+      res.send({ status: 0, msg: "登录失败" });
+    }
+  });
 });
 // 退出
 router.post("/api/admin/signOut", (req, res) => {
@@ -133,10 +130,7 @@ router.post("/api/admin/updateUser", (req, res) => {
         //需要更新图片
         const fs = require("fs");
         let D = Date.now();
-        let saveImg = path.join(
-          __dirname,
-          "./assets/upload/avatar/" + D + ".png",
-        ); //api.js的上级的static下
+        let saveImg = path.join(__dirname, "./assets/upload/avatar/" + D + ".png"); //api.js的上级的static下
         let pathImg = "/assets/upload/avatar/" + D + ".png"; //返前台路径目录
         let base64 = req.body.avatar.replace(/^data:image\/\w+;base64,/, "");
         let dataBuffer = new Buffer(base64, "base64"); //把base64码转成buffer对象，
@@ -172,36 +166,33 @@ router.post("/api/admin/updateUser", (req, res) => {
 });
 //检测token
 router.post("/api/admin/checkUser", (req, res) => {
-  db.User.find(
-    { name: req.body.user_name, token: req.body.token },
-    (err, docs) => {
-      if (err) {
-        res.send(err);
-        return;
-      }
-      if (docs.length > 0) {
-        let token = req.body.token; // 从body或query或者header中获取token
-        let secretOrPrivateKey = "123456"; // 这是加密的key（密钥）
+  db.User.find({ name: req.body.user_name, token: req.body.token }, (err, docs) => {
+    if (err) {
+      res.send(err);
+      return;
+    }
+    if (docs.length > 0) {
+      let token = req.body.token; // 从body或query或者header中获取token
+      let secretOrPrivateKey = "123456"; // 这是加密的key（密钥）
 
-        jwt.verify(token, secretOrPrivateKey, function (err, decode) {
-          if (err) {
-            //  时间失效的时候/ 伪造的token
-            res.send({ status: 0 });
-          } else {
-            res.send({
-              status: 1,
-              type: docs[0]["type"],
-              user_name: docs[0]["name"],
-              avatar: docs[0]["avatar"],
-              nickName: docs[0]["nickName"],
-            });
-          }
-        });
-      } else {
-        res.send({ status: 0 });
-      }
-    },
-  );
+      jwt.verify(token, secretOrPrivateKey, function (err, decode) {
+        if (err) {
+          //  时间失效的时候/ 伪造的token
+          res.send({ status: 0 });
+        } else {
+          res.send({
+            status: 1,
+            type: docs[0]["type"],
+            user_name: docs[0]["name"],
+            avatar: docs[0]["avatar"],
+            nickName: docs[0]["nickName"],
+          });
+        }
+      });
+    } else {
+      res.send({ status: 0 });
+    }
+  });
 });
 // 分页
 router.post("/api/articleLists", async (req, res) => {
@@ -326,13 +317,13 @@ router.get("/api/articleDetail/:id", function (req, res) {
     let next = {};
 
     db.Article.find({ _id: { $gt: req.params.id } }) //上一条
-      .then((res2) => {
+      .then(res2 => {
         if (res2.length > 0) {
           prev.title = res2[0]["title"];
           prev._id = res2[0]["_id"];
         }
         db.Article.find({ _id: { $lt: req.params.id } }) //下一条
-          .then((res3) => {
+          .then(res3 => {
             if (res3.length > 0) {
               next.title = res3[res3.length - 1]["title"];
               next._id = res3[res3.length - 1]["_id"];
@@ -343,7 +334,7 @@ router.get("/api/articleDetail/:id", function (req, res) {
             res.send(obj);
           });
       })
-      .catch((rej) => {
+      .catch(rej => {
         console.log(rej);
       });
   });
@@ -383,7 +374,7 @@ router.post("/api/admin/updateArticle", (req, res) => {
 });
 // 文章删除
 router.post("/api/admin/deleteArticle", (req, res) => {
-  db.Article.remove({ _id: req.body._id }, (err) => {
+  db.Article.remove({ _id: req.body._id }, err => {
     if (err) {
       res.status(500).send();
       return;
@@ -416,16 +407,7 @@ router.post("/api/comment/reply", (req, res) => {
     if (err) {
       return;
     }
-    let {
-      id,
-      from_uid,
-      from_uname,
-      avatar,
-      to_uid,
-      to_uname,
-      content,
-      date,
-    } = req.body;
+    let { id, from_uid, from_uname, avatar, to_uid, to_uname, content, date } = req.body;
     let obj = { from_uid, from_uname, avatar, to_uid, to_uname, content, date };
     let comments = docs[0].comments;
 
@@ -498,7 +480,7 @@ router.post("/api/admin/updateDemo", (req, res) => {
 });
 // demo删除
 router.post("/api/admin/deleteDemo", (req, res) => {
-  db.Demo.remove({ _id: req.body._id }, (err) => {
+  db.Demo.remove({ _id: req.body._id }, err => {
     if (err) {
       res.status(500).send();
       return;
@@ -514,17 +496,13 @@ router.get("/api/visitied", (req, res) => {
     if (docs.length > 0) {
       //有就+1 并更新数据
       var times2 = docs[0].times + 1;
-      db.times.updateOne(
-        { times: docs[0].times },
-        { $set: { times: times2 } },
-        (err, docs2) => {
-          if (err) throw err;
-          res.send({ code: 200, data: times2, msg: "success" });
-        },
-      );
+      db.times.updateOne({ times: docs[0].times }, { $set: { times: times2 } }, (err, docs2) => {
+        if (err) throw err;
+        res.send({ code: 200, data: times2, msg: "success" });
+      });
     } else {
       //没有则插入新数据
-      db.times.create([{ times: 1 }], (err) => {
+      db.times.create([{ times: 1 }], err => {
         if (err) throw err;
         res.send({ code: 200, data: 1, msg: "success" });
       });
@@ -551,4 +529,21 @@ router.post("/api/uploadImg", (req, res) => {
   });
 });
 
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "/assets/upload/demo"));
+  },
+  filename: function (req, file, cb) {
+    var singfileArray = file.originalname.split(".");
+    var fileExtension = singfileArray[singfileArray.length - 1];
+    cb(null, Date.now() + "." + fileExtension);
+  },
+});
+const upload = multer({ storage });
+router.post("/api/upload", upload.single("file"), async (req, res) => {
+  const file = req.file;
+  file.url = "/assets/upload/demo/" + file.filename;
+  res.send(file);
+});
 module.exports = router;
